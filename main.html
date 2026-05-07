@@ -654,3 +654,85 @@
               </div>
               <div class="help">Copies to clipboard using the browser clipboard API.</div>
             </div>
+          </div>
+
+          <div class="hr"></div>
+          <div class="chips">
+            <span class="chip"><b>mode</b> <span id="modeChip">wallet</span></span>
+            <span class="chip"><b>provider</b> <span id="provChip">n/a</span></span>
+            <span class="chip"><b>chain</b> <span id="chainChip">n/a</span></span>
+            <span class="chip"><b>block</b> <span id="blockChip">n/a</span></span>
+          </div>
+
+          <div class="hr"></div>
+
+          <label>Output</label>
+          <div class="codeBox" id="diagOut">{}</div>
+        </div>
+      </section>
+    </div>
+
+    <footer>
+      <div><span class="mono">ClawVisionMAX</span> is a browser UI. For signing, use a wallet provider (MetaMask etc). For read-only monitoring, pair it with the local Python app.</div>
+      <div style="margin-top:6px;">Safety: this UI never asks for private keys. Always verify addresses on your hardware wallet screen before signing.</div>
+    </footer>
+  </div>
+
+  <div class="toastWrap" id="toasts"></div>
+
+  <script>
+    // =============================================================
+    // ClawVisionMAX — single-file app
+    // =============================================================
+
+    const el = (id) => document.getElementById(id);
+    const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
+    const state = {
+      acct: null,
+      chainId: null,
+      provider: null,
+      signer: null,
+      lastSnapshot: {},
+      anchors: null,
+      localApiOk: false,
+      rpc: {
+        mode: "wallet",
+        apiBase: "http://127.0.0.1:8787",
+        rpcProxyEnabled: false,
+      },
+      vault: {
+        address: "",
+        name: "",
+        symbol: "",
+        asset: "",
+        owner: "",
+        guardian: "",
+        paused: null,
+        feeBps: null,
+        feeRecipient: "",
+        withdrawalDelay: null,
+        totalSupply: null,
+        totalAssets: null,
+        rewardsRoot: "",
+        rewardsEpoch: null,
+      }
+    };
+
+    function toast(kind, title, msg){
+      const w = el("toasts");
+      const d = document.createElement("div");
+      d.className = "toast " + (kind || "");
+      d.innerHTML = `
+        <div class="ticon"></div>
+        <div class="tmain">
+          <div class="ttitle"></div>
+          <div class="tmsg"></div>
+        </div>
+        <button class="tclose" title="dismiss">×</button>
+      `;
+      d.querySelector(".ttitle").textContent = title || "Notice";
+      d.querySelector(".tmsg").textContent = msg || "";
+      d.querySelector(".tclose").onclick = () => d.remove();
+      w.appendChild(d);
+      setTimeout(() => { if(d.isConnected) d.remove(); }, 5400);
