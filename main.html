@@ -1064,3 +1064,85 @@
         vault: {...state.vault},
         account: state.acct,
         chainId: state.chainId,
+        mode: state.rpc.mode,
+      };
+      setDiag(snap);
+      toast("ok","Vault refreshed","Public state fetched.");
+    }
+
+    async function previewDeposit(){
+      const assets = el("depAssets").value.trim();
+      if(!assets || !/^\d+$/.test(assets)){ toast("warn","Input","Deposit assets must be an integer (raw units)."); return; }
+      const c = await vaultContractForRead();
+      const shares = await c.previewDeposit(assets);
+      el("depPreviewOut").textContent = "preview shares: " + (shares.toString ? shares.toString() : String(shares));
+    }
+
+    function defaultReceiver(){
+      const r = el("depReceiver").value.trim();
+      if(r) return r;
+      if(state.acct) return state.acct;
+      return "";
+    }
+
+    function defaultWrReceiver(){
+      const r = el("wrReceiver").value.trim();
+      if(r) return r;
+      if(state.acct) return state.acct;
+      return "";
+    }
+
+    async function doDeposit(){
+      const assets = el("depAssets").value.trim();
+      if(!assets || !/^\d+$/.test(assets)){ toast("warn","Input","Deposit assets must be an integer (raw units)."); return; }
+      const receiver = defaultReceiver();
+      if(!isAddr(receiver)){ toast("warn","Receiver","Receiver must be a valid address."); return; }
+      const c = await vaultContractForWrite();
+      const tx = await c.deposit(assets, receiver);
+      toast("ok","Deposit sent","tx: " + tx.hash);
+      await tx.wait(1);
+      toast("ok","Deposit confirmed","1 confirmation received.");
+    }
+
+    function randomSalt(){
+      const hi = Math.floor(Math.random() * 1e12);
+      const lo = Math.floor(Math.random() * 1e12);
+      return String(hi * 1000000000000 + lo);
+    }
+
+    async function doRequestWithdraw(){
+      const shares = el("wrShares").value.trim();
+      const minA = el("wrMinAssets").value.trim() || "0";
+      const recv = defaultWrReceiver();
+      const salt = el("wrSalt").value.trim() || randomSalt();
+      if(!/^\d+$/.test(shares) || shares === "0"){ toast("warn","Input","Shares must be a non-zero integer."); return; }
+      if(!/^\d+$/.test(minA)){ toast("warn","Input","Min assets must be an integer."); return; }
+      if(!/^\d+$/.test(salt)){ toast("warn","Input","Salt must be an integer."); return; }
+      if(!isAddr(recv)){ toast("warn","Receiver","Receiver must be a valid address."); return; }
+
+      const c = await vaultContractForWrite();
+      const tx = await c.requestWithdraw(recv, shares, minA, salt);
+      toast("ok","Request submitted","tx: " + tx.hash);
+      const rcpt = await tx.wait(1);
+      let reqId = null;
+      for(const log of rcpt.logs){
+        try{
+          const ethers = await getEthers();
+          const iface = new ethers.utils.Interface(HERRETA_ABI);
+          const parsed = iface.parseLog(log);
+          if(parsed && parsed.name === "WithdrawalRequested"){
+            reqId = parsed.args.requestId;
+          }
+        }catch(_e){}
+      }
+      el("wrSalt").value = salt;
+      if(reqId){
+        el("wrOut").textContent = "requestId: " + reqId;
+        el("reqId").value = reqId;
+        toast("ok","Request id captured","Saved into execute/cancel box.");
+      }else{
+        el("wrOut").textContent = "requestId: (check logs / receipt)";
+        toast("warn","Request id not parsed","Your RPC may have pruned logs; compute requestId offchain if needed.");
+      }
+    }
+
