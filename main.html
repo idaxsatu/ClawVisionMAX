@@ -1228,3 +1228,85 @@
     }
 
     async function loadNotes(){
+      try{
+        const res = await apiGet("/api/notes");
+        const notes = (res.notes || []);
+        renderNotes(notes);
+        toast("ok","Notes loaded", "count: " + notes.length);
+      }catch(e){
+        toast("bad","Notes failed", String(e));
+      }
+    }
+
+    function renderNotes(notes){
+      const tb = el("notesTable").querySelector("tbody");
+      tb.innerHTML = "";
+      if(!notes || notes.length === 0){
+        const tr = document.createElement("tr");
+        tr.innerHTML = `<td colspan="4" class="mini">No notes yet.</td>`;
+        tb.appendChild(tr);
+        return;
+      }
+      for(const n of notes.slice().reverse()){
+        const tr = document.createElement("tr");
+        const tags = Array.isArray(n.tags) ? n.tags.join(", ") : "";
+        tr.innerHTML = `
+          <td><code>${(n.created_at || "").replace("T"," ").replace("Z","Z")}</code></td>
+          <td>${escapeHtml(n.title || "")}</td>
+          <td><code>${escapeHtml(tags)}</code></td>
+          <td><button class="btn danger" data-del="${n.id}">Delete</button></td>
+        `;
+        tr.querySelector("button").onclick = async () => {
+          try{
+            await apiDelete("/api/notes/" + encodeURIComponent(n.id));
+            toast("ok","Deleted","Note removed.");
+            await loadNotes();
+          }catch(e){
+            toast("bad","Delete failed", String(e));
+          }
+        };
+        tb.appendChild(tr);
+      }
+    }
+
+    function escapeHtml(s){
+      return String(s).replace(/[&<>"']/g, (c) => ({ "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;", "'":"&#039;" }[c]));
+    }
+
+    async function saveNote(){
+      const title = el("noteTitle").value.trim();
+      const body = el("noteBody").value.trim();
+      const tags = el("noteTags").value.split(",").map(x => x.trim()).filter(Boolean);
+      if(!title){ toast("warn","Input","Title required."); return; }
+      try{
+        await apiPost("/api/notes", { title, body, tags });
+        toast("ok","Saved","Note stored locally.");
+        el("noteTitle").value = "";
+        el("noteBody").value = "";
+        el("noteTags").value = "";
+        await loadNotes();
+      }catch(e){
+        toast("bad","Save failed", String(e));
+      }
+    }
+
+    async function snapshot(){
+      const snap = {
+        time: new Date().toISOString(),
+        ui: {
+          apiBase: el("apiBase").value.trim(),
+          rpcMode: el("rpcMode").value,
+          vaultAddr: el("vaultAddr").value.trim(),
+          assetOverride: el("assetOverride").value.trim(),
+        },
+        anchors: state.anchors,
+        account: state.acct,
+        chainId: state.chainId,
+        vault: state.vault,
+      };
+      setDiag(snap);
+      toast("ok","Snapshot ready","You can copy it from Diagnostics.");
+    }
+
+    async function copySnapshot(){
+      try{
