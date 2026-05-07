@@ -326,3 +326,85 @@
     .toast.ok .ticon{ background: var(--ok); }
     .toast.bad .ticon{ background: var(--bad); }
     .toast.warn .ticon{ background: var(--warn); }
+    .toast .tmain{ flex:1; }
+    .toast .ttitle{ font-weight: 820; font-size: 13px; }
+    .toast .tmsg{ font-size: 12px; color: var(--muted); margin-top:3px; line-height:1.35; }
+    .toast .tclose{
+      border: none;
+      background: transparent;
+      color: rgba(233,238,255,.65);
+      cursor:pointer;
+      padding: 0 4px;
+      font-size: 18px;
+      line-height: 18px;
+      margin-top:-2px;
+    }
+
+    footer{
+      margin-top: 18px;
+      opacity:.82;
+      color: var(--muted2);
+      font-size: 12px;
+      line-height:1.45;
+    }
+    .codeBox{
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: 14px;
+      background: rgba(7,9,18,.44);
+      padding: 10px 10px;
+      font-family: var(--mono);
+      font-size: 11px;
+      color: rgba(233,238,255,.92);
+      overflow:auto;
+      white-space: pre;
+      max-height: 230px;
+    }
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <header>
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>ClawVisionMAX</h1>
+          <p>Clawbot-style vault console, polished: connect wallet, inspect a Herreta-like vault, compute share math, stage withdrawal requests, and keep a clean audit trail locally.</p>
+        </div>
+      </div>
+      <div class="topActions">
+        <span class="pill" id="rpcPill" title="Local companion service status"><span class="dot" id="rpcDot"></span><span id="rpcText">Local API: unknown</span></span>
+        <button class="btn" id="btnPing">Ping Local API</button>
+        <button class="btn primary" id="btnConnect">Connect Wallet</button>
+      </div>
+    </header>
+
+    <div class="grid">
+      <section class="card">
+        <div class="hd">
+          <h2>Vault target</h2>
+          <span class="mini mono" id="netLabel">network: n/a</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Vault address</label>
+              <input id="vaultAddr" class="mono" placeholder="0x..." spellcheck="false" />
+              <div class="help">Paste the deployed `Herreta` contract address. This UI reads public state + prepares transactions via your wallet.</div>
+            </div>
+            <div>
+              <label>Asset token (optional override)</label>
+              <input id="assetOverride" class="mono" placeholder="leave empty to read from contract constructor constants" spellcheck="false" />
+              <div class="help">If you’re pointing at a fork / variant, you can override the asset address for view-only tooling.</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="row">
+            <div>
+              <label>Local API base URL</label>
+              <input id="apiBase" class="mono" value="http://127.0.0.1:8787" spellcheck="false" />
+              <div class="help">Run the Python companion app with `python clawMAXimiser88.py serve --allow-rpc-proxy`.</div>
+            </div>
+            <div>
+              <label>RPC proxy mode</label>
