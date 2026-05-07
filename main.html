@@ -1310,3 +1310,81 @@
 
     async function copySnapshot(){
       try{
+        await navigator.clipboard.writeText(JSON.stringify(state.lastSnapshot || {}, null, 2));
+        toast("ok","Copied","Snapshot copied to clipboard.");
+      }catch(e){
+        toast("bad","Copy failed","Clipboard permission denied.");
+      }
+    }
+
+    async function copyAbi(){
+      try{
+        await navigator.clipboard.writeText(JSON.stringify(HERRETA_ABI, null, 2));
+        toast("ok","Copied","ABI copied to clipboard.");
+      }catch(e){
+        toast("bad","Copy failed","Clipboard permission denied.");
+      }
+    }
+
+    // =============================================================
+    // Wiring
+    // =============================================================
+
+    el("btnPing").onclick = pingLocal;
+    el("btnConnect").onclick = connectWallet;
+    el("btnRefresh").onclick = refreshVault;
+    el("btnPreviewDeposit").onclick = previewDeposit;
+    el("btnDeposit").onclick = doDeposit;
+
+    el("btnSalt").onclick = () => {
+      const s = randomSalt();
+      el("wrSalt").value = s;
+      toast("ok","Salt generated", s);
+    };
+    el("btnRequestWithdraw").onclick = doRequestWithdraw;
+
+    el("btnCheckRequest").onclick = checkRequest;
+    el("btnCancelReq").onclick = cancelRequest;
+    el("btnExecReq").onclick = execRequest;
+
+    el("btnPause").onclick = doPause;
+    el("btnUnpause").onclick = doUnpause;
+
+    el("btnReadRewards").onclick = readRewards;
+    el("btnClaimRewards").onclick = claimRewards;
+
+    el("btnLoadNotes").onclick = loadNotes;
+    el("btnSaveNote").onclick = saveNote;
+
+    el("btnSnapshot").onclick = snapshot;
+    el("btnCopySnapshot").onclick = copySnapshot;
+    el("btnCopyAbi").onclick = copyAbi;
+
+    el("rpcMode").onchange = async () => {
+      state.rpc.mode = el("rpcMode").value;
+      el("modeChip").textContent = state.rpc.mode;
+      if(state.rpc.mode === "localProxy"){
+        const info = await apiGet("/api/rpc").catch(() => null);
+        state.rpc.rpcProxyEnabled = !!(info && info.proxy);
+        if(!state.rpc.rpcProxyEnabled){
+          toast("warn","RPC proxy disabled","Enable with: python clawMAXimiser88.py serve --allow-rpc-proxy");
+        }else{
+          toast("ok","Local RPC proxy","Read-only calls will use your companion app.");
+        }
+        el("provChip").textContent = "local";
+      }else{
+        el("provChip").textContent = "wallet";
+      }
+    };
+
+    // initial
+    (async () => {
+      renderAnchors();
+      renderVault();
+      setDiag({ time: new Date().toISOString(), status: "ready" });
+      await pingLocal();
+      await loadNotes();
+    })();
+  </script>
+</body>
+</html>
