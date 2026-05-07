@@ -818,3 +818,167 @@
       }
     }
 
+    function renderAnchors(){
+      const ch = el("anchorsChips");
+      ch.innerHTML = "";
+      if(!state.anchors){
+        ch.innerHTML = `<span class="chip"><b>anchors</b> unknown</span>`;
+        return;
+      }
+      const a = state.anchors;
+      const items = [
+        ["addressA", a.addressA],
+        ["addressB", a.addressB],
+        ["addressC", a.addressC],
+        ["hexA", a.hexA],
+        ["hexB", a.hexB],
+        ["hexC", a.hexC],
+      ];
+      for(const [k,v] of items){
+        const s = document.createElement("span");
+        s.className = "chip";
+        s.innerHTML = `<b>${k}</b> <span class="mono"></span>`;
+        s.querySelector("span").textContent = v || "—";
+        ch.appendChild(s);
+      }
+    }
+
+    // =============================================================
+    // Minimal ABI for Herreta-like vault
+    // =============================================================
+
+    const HERRETA_ABI = [
+      {"type":"function","name":"name","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"string"}]},
+      {"type":"function","name":"symbol","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"string"}]},
+      {"type":"function","name":"asset","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+      {"type":"function","name":"owner","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+      {"type":"function","name":"guardian","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+      {"type":"function","name":"paused","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"bool"}]},
+      {"type":"function","name":"feeBps","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint16"}]},
+      {"type":"function","name":"feeRecipient","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"address"}]},
+      {"type":"function","name":"withdrawalDelay","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint32"}]},
+      {"type":"function","name":"totalSupply","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint256"}]},
+      {"type":"function","name":"totalAssets","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint256"}]},
+      {"type":"function","name":"rewardsRoot","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"bytes32"}]},
+      {"type":"function","name":"rewardsEpoch","stateMutability":"view","inputs":[],"outputs":[{"name":"","type":"uint64"}]},
+
+      {"type":"function","name":"previewDeposit","stateMutability":"view","inputs":[{"name":"assets","type":"uint256"}],"outputs":[{"name":"","type":"uint256"}]},
+      {"type":"function","name":"requestWithdraw","stateMutability":"nonpayable","inputs":[
+        {"name":"receiver","type":"address"},
+        {"name":"shares","type":"uint256"},
+        {"name":"minAssets","type":"uint256"},
+        {"name":"salt","type":"uint256"}
+      ],"outputs":[{"name":"requestId","type":"bytes32"}]},
+      {"type":"function","name":"isRequestExecutable","stateMutability":"view","inputs":[{"name":"requestId","type":"bytes32"}],"outputs":[{"name":"ok","type":"bool"},{"name":"reason","type":"string"}]},
+      {"type":"function","name":"cancelWithdraw","stateMutability":"nonpayable","inputs":[{"name":"requestId","type":"bytes32"}],"outputs":[]},
+      {"type":"function","name":"executeWithdraw","stateMutability":"nonpayable","inputs":[{"name":"requestId","type":"bytes32"}],"outputs":[{"name":"assetsOut","type":"uint256"},{"name":"sharesBurned","type":"uint256"}]},
+      {"type":"function","name":"deposit","stateMutability":"nonpayable","inputs":[{"name":"assets","type":"uint256"},{"name":"receiver","type":"address"}],"outputs":[{"name":"shares","type":"uint256"}]},
+      {"type":"function","name":"pause","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+      {"type":"function","name":"unpause","stateMutability":"nonpayable","inputs":[],"outputs":[]},
+      {"type":"function","name":"setGuardian","stateMutability":"nonpayable","inputs":[{"name":"newGuardian","type":"address"}],"outputs":[]},
+      {"type":"function","name":"claimRewards","stateMutability":"nonpayable","inputs":[{"name":"epoch","type":"uint64"},{"name":"amount","type":"uint256"},{"name":"proof","type":"bytes32[]"}],"outputs":[{"name":"leaf","type":"bytes32"}]},
+      {"type":"event","name":"WithdrawalRequested","inputs":[
+        {"indexed":true,"name":"requestId","type":"bytes32"},
+        {"indexed":true,"name":"owner","type":"address"},
+        {"indexed":true,"name":"receiver","type":"address"},
+        {"indexed":false,"name":"shares","type":"uint256"},
+        {"indexed":false,"name":"minAssets","type":"uint256"},
+        {"indexed":false,"name":"validAfter","type":"uint256"}
+      ],"anonymous":false}
+    ];
+
+    // =============================================================
+    // Provider selection
+    // =============================================================
+
+    async function getEthers(){
+      if(window.ethers) return window.ethers;
+      // dynamic import from CDN if not present
+      const s = document.createElement("script");
+      s.src = "https://cdn.jsdelivr.net/npm/ethers@5.7.2/dist/ethers.umd.min.js";
+      s.crossOrigin = "anonymous";
+      const p = new Promise((resolve,reject) => {
+        s.onload = resolve;
+        s.onerror = reject;
+      });
+      document.head.appendChild(s);
+      await p;
+      return window.ethers;
+    }
+
+    async function connectWallet(){
+      const ethers = await getEthers();
+      if(!window.ethereum){
+        toast("bad","Wallet missing","No injected provider found. Install MetaMask or switch to local proxy mode for read-only.");
+        return;
+      }
+      const prov = new ethers.providers.Web3Provider(window.ethereum, "any");
+      await prov.send("eth_requestAccounts", []);
+      const signer = prov.getSigner();
+      const acct = await signer.getAddress();
+      const net = await prov.getNetwork();
+      state.provider = prov;
+      state.signer = signer;
+      state.acct = acct;
+      state.chainId = net.chainId;
+      el("acctLabel").textContent = "account: " + acct;
+      el("netLabel").textContent = "network: chainId " + net.chainId;
+      el("provChip").textContent = "wallet";
+      el("chainChip").textContent = net.chainId;
+      toast("ok","Wallet connected","Ready for signed actions.");
+    }
+
+    async function currentProvider(){
+      const mode = el("rpcMode").value;
+      state.rpc.mode = mode;
+      el("modeChip").textContent = mode;
+      if(mode === "wallet"){
+        if(!state.provider){
+          await connectWallet();
+        }
+        return { kind:"wallet", ethers: await getEthers(), provider: state.provider, signer: state.signer };
+      }
+      // localProxy: read-only calls through companion app
+      return { kind:"local", ethers: await getEthers(), provider: null, signer: null };
+    }
+
+    async function vaultContractForRead(){
+      const ctx = await currentProvider();
+      const addr = pickVault();
+      if(!isAddr(addr)) throw new Error("vault address invalid");
+      const ethers = ctx.ethers;
+      if(ctx.kind === "wallet"){
+        return new ethers.Contract(addr, HERRETA_ABI, ctx.provider);
+      }
+      // local: build a faux contract object with callStatic wrappers via rpc-proxy
+      return buildProxyContract(addr);
+    }
+
+    async function vaultContractForWrite(){
+      const ctx = await currentProvider();
+      if(ctx.kind !== "wallet") throw new Error("write requires wallet mode");
+      const addr = pickVault();
+      if(!isAddr(addr)) throw new Error("vault address invalid");
+      const ethers = ctx.ethers;
+      return new ethers.Contract(addr, HERRETA_ABI, ctx.signer);
+    }
+
+    // =============================================================
+    // Local proxy: minimal eth_call wrapper using ABI encoding from ethers
+    // =============================================================
+
+    function buildProxyContract(address){
+      const ifacePromise = (async () => {
+        const ethers = await getEthers();
+        return new ethers.utils.Interface(HERRETA_ABI);
+      })();
+
+      async function ethCall(data){
+        const payload = {"jsonrpc":"2.0","id": Date.now(), "method":"eth_call", "params":[{"to":address, "data":data},"latest"]};
+        const res = await apiPost("/api/rpc-proxy", payload);
+        if(!res.ok) throw new Error("rpc proxy failed");
+        return res.result;
+      }
+
+      async function callView(method, args){
+        const iface = await ifacePromise;
