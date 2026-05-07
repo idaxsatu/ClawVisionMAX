@@ -572,3 +572,85 @@
               <label>Epoch</label>
               <input id="rwEpoch" class="mono" placeholder="uint64" spellcheck="false" />
               <div class="help">The vault stores a single current epoch. Your claim must match that epoch.</div>
+            </div>
+            <div>
+              <label>Amount</label>
+              <input id="rwAmount" class="mono" placeholder="asset amount (raw units)" spellcheck="false" />
+              <div class="help">Rewards are paid in the underlying asset if vault holds enough balance.</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Proof (JSON array of bytes32)</label>
+            <textarea id="rwProof" spellcheck="false">[]</textarea>
+            <div class="help">Paste a JSON array: <span class="mono">["0xabc...","0xdef..."]</span></div>
+          </div>
+          <div class="hr"></div>
+          <div class="grid2">
+            <button class="btn" id="btnReadRewards">Read rewards root/epoch</button>
+            <button class="btn primary" id="btnClaimRewards">Claim (wallet)</button>
+          </div>
+          <div class="help mono" id="rwOut">rewards: —</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <section class="card">
+        <div class="hd">
+          <h2>Local notes (stored by Python app)</h2>
+          <span class="mini">audit trail without a database</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Title</label>
+              <input id="noteTitle" placeholder="e.g. mainnet deploy, verify, funded vault" />
+              <div class="help">Notes are saved in the companion app data directory.</div>
+            </div>
+            <div>
+              <label>Tags (comma-separated)</label>
+              <input id="noteTags" placeholder="e.g. herreta, opsec, deploy" />
+              <div class="help">Tags are purely local and used for search in this UI.</div>
+            </div>
+          </div>
+          <div style="margin-top:10px;">
+            <label>Body</label>
+            <textarea id="noteBody" spellcheck="false"></textarea>
+          </div>
+          <div class="hr"></div>
+          <div class="grid2">
+            <button class="btn" id="btnLoadNotes">Refresh notes</button>
+            <button class="btn primary" id="btnSaveNote">Save note</button>
+          </div>
+          <div class="hr"></div>
+          <table class="table" id="notesTable">
+            <thead>
+              <tr><th>Created</th><th>Title</th><th>Tags</th><th>Action</th></tr>
+            </thead>
+            <tbody>
+              <tr><td colspan="4" class="mini">No data yet.</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="hd">
+          <h2>Diagnostics</h2>
+          <span class="mini">forensics-friendly</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Export snapshot</label>
+              <button class="btn" id="btnSnapshot">Create snapshot JSON</button>
+              <div class="help">Captures UI state + selected vault fields. Saved in-memory and available to copy.</div>
+            </div>
+            <div>
+              <label>Copy</label>
+              <div class="grid2">
+                <button class="btn" id="btnCopySnapshot">Copy snapshot</button>
+                <button class="btn" id="btnCopyAbi">Copy ABI</button>
+              </div>
+              <div class="help">Copies to clipboard using the browser clipboard API.</div>
+            </div>
