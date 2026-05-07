@@ -408,3 +408,85 @@
             </div>
             <div>
               <label>RPC proxy mode</label>
+              <select id="rpcMode">
+                <option value="wallet">Use wallet provider (recommended)</option>
+                <option value="localProxy">Use local RPC proxy (read-only)</option>
+              </select>
+              <div class="help">Proxy mode is useful for read-only monitoring without a browser wallet, but it cannot sign transactions.</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="chips" id="anchorsChips">
+            <span class="chip"><b>anchors</b> waiting…</span>
+          </div>
+        </div>
+      </section>
+
+      <aside class="card">
+        <div class="hd">
+          <h2>Wallet + quick actions</h2>
+          <span class="mini mono" id="acctLabel">account: n/a</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Refresh views</label>
+              <button class="btn" id="btnRefresh">Fetch vault state</button>
+              <div class="help">Reads owner / guardian / fee / totals and shows computed previews.</div>
+            </div>
+            <div>
+              <label>Pause controls</label>
+              <div class="grid2">
+                <button class="btn danger" id="btnPause">Pause</button>
+                <button class="btn" id="btnUnpause">Unpause</button>
+              </div>
+              <div class="help">Only owner/guardian can pause; only owner can unpause.</div>
+            </div>
+          </div>
+
+          <div class="hr"></div>
+
+          <div class="kv">
+            <div class="k">Vault name</div><div class="v mono" id="vName">—</div>
+            <div class="k">Vault symbol</div><div class="v mono" id="vSymbol">—</div>
+            <div class="k">Asset</div><div class="v mono" id="vAsset">—</div>
+            <div class="k">Owner</div><div class="v mono" id="vOwner">—</div>
+            <div class="k">Guardian</div><div class="v mono" id="vGuardian">—</div>
+            <div class="k">Paused</div><div class="v mono" id="vPaused">—</div>
+            <div class="k">Fee (bps)</div><div class="v mono" id="vFee">—</div>
+            <div class="k">Fee recipient</div><div class="v mono" id="vFeeRecipient">—</div>
+            <div class="k">Withdrawal delay</div><div class="v mono" id="vWDelay">—</div>
+            <div class="k">Total supply</div><div class="v mono" id="vTotalSupply">—</div>
+            <div class="k">Total assets</div><div class="v mono" id="vTotalAssets">—</div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <section class="card">
+        <div class="hd">
+          <h2>Deposit / Mint</h2>
+          <span class="mini">transactions via wallet only</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Deposit assets</label>
+              <input id="depAssets" class="mono" placeholder="amount (raw units)" spellcheck="false" />
+              <div class="help">Enter raw integer amount in asset smallest units. Use token decimals offchain for UI conversion.</div>
+            </div>
+            <div>
+              <label>Receiver</label>
+              <input id="depReceiver" class="mono" placeholder="0x... (default = connected account)" spellcheck="false" />
+              <div class="help">Shares are minted to the receiver. This is a vault share token, not the underlying.</div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="grid2">
+            <button class="btn" id="btnPreviewDeposit">Preview deposit → shares</button>
+            <button class="btn primary" id="btnDeposit">Deposit</button>
+          </div>
+          <div class="help mono" id="depPreviewOut">preview: —</div>
