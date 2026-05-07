@@ -1146,3 +1146,85 @@
       }
     }
 
+    async function checkRequest(){
+      const rid = el("reqId").value.trim();
+      if(!isHex(rid) || rid.length !== 66){ toast("warn","Input","Request id must be bytes32 hex (0x + 64 hex)."); return; }
+      const c = await vaultContractForRead();
+      let out;
+      if(c._proxy){
+        out = await c.isRequestExecutable(rid);
+      }else{
+        const r = await c.isRequestExecutable(rid);
+        out = { ok: r.ok, reason: r.reason };
+      }
+      el("reqOut").textContent = "status: " + (out.ok ? "executable" : "blocked") + " (" + out.reason + ")";
+      toast(out.ok ? "ok":"warn", "Request check", out.ok ? "Executable now." : ("Blocked: " + out.reason));
+    }
+
+    async function cancelRequest(){
+      const rid = el("reqId").value.trim();
+      if(!isHex(rid) || rid.length !== 66){ toast("warn","Input","Request id must be bytes32 hex."); return; }
+      const c = await vaultContractForWrite();
+      const tx = await c.cancelWithdraw(rid);
+      toast("ok","Cancel sent","tx: " + tx.hash);
+      await tx.wait(1);
+      toast("ok","Cancel confirmed","Request cancelled.");
+    }
+
+    async function execRequest(){
+      const rid = el("reqId").value.trim();
+      if(!isHex(rid) || rid.length !== 66){ toast("warn","Input","Request id must be bytes32 hex."); return; }
+      const c = await vaultContractForWrite();
+      const tx = await c.executeWithdraw(rid);
+      toast("ok","Execute sent","tx: " + tx.hash);
+      const rcpt = await tx.wait(1);
+      toast("ok","Execute confirmed","Withdraw executed.");
+    }
+
+    async function doPause(){
+      const c = await vaultContractForWrite();
+      const tx = await c.pause();
+      toast("ok","Pause sent","tx: " + tx.hash);
+      await tx.wait(1);
+      toast("ok","Paused","Vault paused.");
+      await refreshVault();
+    }
+
+    async function doUnpause(){
+      const c = await vaultContractForWrite();
+      const tx = await c.unpause();
+      toast("ok","Unpause sent","tx: " + tx.hash);
+      await tx.wait(1);
+      toast("ok","Unpaused","Vault resumed.");
+      await refreshVault();
+    }
+
+    async function readRewards(){
+      const c = await vaultContractForRead();
+      const root = await c.rewardsRoot();
+      const epoch = await c.rewardsEpoch();
+      el("rwOut").textContent = "root: " + root + " epoch: " + (epoch.toString ? epoch.toString() : String(epoch));
+      el("rwEpoch").value = epoch.toString ? epoch.toString() : String(epoch);
+      toast("ok","Rewards read","Root and epoch loaded.");
+    }
+
+    async function claimRewards(){
+      const epoch = el("rwEpoch").value.trim();
+      const amount = el("rwAmount").value.trim();
+      const proofTxt = el("rwProof").value.trim();
+      if(!/^\d+$/.test(epoch)){ toast("warn","Input","Epoch must be an integer."); return; }
+      if(!/^\d+$/.test(amount) || amount === "0"){ toast("warn","Input","Amount must be a non-zero integer."); return; }
+      let proof;
+      try{ proof = JSON.parse(proofTxt || "[]"); }catch(e){ toast("warn","Input","Proof must be a JSON array."); return; }
+      if(!Array.isArray(proof)){ toast("warn","Input","Proof must be a JSON array."); return; }
+      for(const p of proof){
+        if(!isHex(p) || p.length !== 66){ toast("warn","Input","Each proof item must be bytes32 hex."); return; }
+      }
+      const c = await vaultContractForWrite();
+      const tx = await c.claimRewards(epoch, amount, proof);
+      toast("ok","Claim sent","tx: " + tx.hash);
+      await tx.wait(1);
+      toast("ok","Claim confirmed","Rewards claimed.");
+    }
+
+    async function loadNotes(){
