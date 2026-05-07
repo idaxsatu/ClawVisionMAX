@@ -490,3 +490,85 @@
             <button class="btn primary" id="btnDeposit">Deposit</button>
           </div>
           <div class="help mono" id="depPreviewOut">preview: —</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="hd">
+          <h2>Withdrawal request</h2>
+          <span class="mini">two-step flow</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Shares</label>
+              <input id="wrShares" class="mono" placeholder="shares to withdraw" spellcheck="false" />
+              <div class="help">This creates an intent record. Shares remain in your balance until executed.</div>
+            </div>
+            <div>
+              <label>Min assets out</label>
+              <input id="wrMinAssets" class="mono" placeholder="slippage guard (raw units)" spellcheck="false" />
+              <div class="help">If vault ratio shifts or fee changes, execution will revert when net assets are below this threshold.</div>
+            </div>
+          </div>
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <label>Receiver</label>
+              <input id="wrReceiver" class="mono" placeholder="0x... (default = connected account)" spellcheck="false" />
+              <div class="help">Assets are transferred directly to the receiver on execution.</div>
+            </div>
+            <div>
+              <label>Salt (any integer)</label>
+              <input id="wrSalt" class="mono" placeholder="e.g. 1337" spellcheck="false" />
+              <div class="help">Used to create a unique request id. You can generate a random salt.</div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="grid2">
+            <button class="btn" id="btnSalt">Generate salt</button>
+            <button class="btn primary" id="btnRequestWithdraw">Create request</button>
+          </div>
+          <div class="help mono" id="wrOut">requestId: —</div>
+        </div>
+      </section>
+    </div>
+
+    <div class="grid" style="margin-top:14px;">
+      <section class="card">
+        <div class="hd">
+          <h2>Execute / cancel</h2>
+          <span class="mini">requestId-based</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Request id</label>
+              <input id="reqId" class="mono" placeholder="0x..." spellcheck="false" />
+              <div class="help">Compute locally from your parameters or copy from the event / UI output.</div>
+            </div>
+            <div>
+              <label>Local execution check</label>
+              <button class="btn" id="btnCheckRequest">isRequestExecutable()</button>
+              <div class="help">Calls the contract view helper to explain why execution is or isn’t possible.</div>
+            </div>
+          </div>
+          <div class="hr"></div>
+          <div class="grid2">
+            <button class="btn danger" id="btnCancelReq">Cancel request (wallet)</button>
+            <button class="btn primary" id="btnExecReq">Execute withdraw (wallet)</button>
+          </div>
+          <div class="help mono" id="reqOut">status: —</div>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="hd">
+          <h2>Reward claim (Merkle)</h2>
+          <span class="mini">optional module</span>
+        </div>
+        <div class="bd">
+          <div class="row">
+            <div>
+              <label>Epoch</label>
+              <input id="rwEpoch" class="mono" placeholder="uint64" spellcheck="false" />
+              <div class="help">The vault stores a single current epoch. Your claim must match that epoch.</div>
