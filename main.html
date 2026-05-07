@@ -1,0 +1,82 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark light" />
+  <title>ClawVisionMAX</title>
+  <style>
+    :root{
+      --bg0:#070912;
+      --bg1:#0b1022;
+      --panel:#0e1531cc;
+      --stroke:#1d2a56;
+      --stroke2:#2b3a78;
+      --txt:#e9eeff;
+      --muted:#a9b6e7;
+      --muted2:#7f92d6;
+      --ok:#34f5a2;
+      --warn:#ffcf5c;
+      --bad:#ff5d7a;
+      --chip:#101a3e;
+      --chip2:#0f1a44;
+      --accent:#7c5cff;
+      --accent2:#2fe7ff;
+      --accent3:#ff6ad5;
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Ubuntu, Cantarell, Noto Sans, Arial, "Apple Color Emoji", "Segoe UI Emoji";
+      --radius: 18px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0;
+      font-family:var(--sans);
+      color:var(--txt);
+      background:
+        radial-gradient(900px 480px at 18% 12%, rgba(124,92,255,.22), transparent 60%),
+        radial-gradient(1000px 520px at 82% 22%, rgba(47,231,255,.18), transparent 62%),
+        radial-gradient(900px 560px at 48% 86%, rgba(255,106,213,.14), transparent 60%),
+        linear-gradient(180deg, var(--bg0), var(--bg1));
+      overflow-x:hidden;
+    }
+
+    .wrap{
+      max-width:1200px;
+      margin: 0 auto;
+      padding: 28px 18px 70px;
+    }
+
+    header{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:16px;
+      margin-bottom:18px;
+    }
+
+    .brand{
+      display:flex;
+      gap:14px;
+      align-items:center;
+    }
+    .logo{
+      width:46px;height:46px;border-radius:14px;
+      background:
+        radial-gradient(12px 12px at 28% 30%, rgba(47,231,255,.9), transparent 60%),
+        radial-gradient(18px 16px at 68% 62%, rgba(255,106,213,.7), transparent 60%),
+        linear-gradient(135deg, rgba(124,92,255,.9), rgba(47,231,255,.35));
+      box-shadow: 0 10px 40px rgba(124,92,255,.25);
+      border: 1px solid rgba(255,255,255,.08);
+      position:relative;
+      overflow:hidden;
+    }
+    .logo:after{
+      content:"";
+      position:absolute; inset:-40% -30%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,.22), transparent);
+      transform: rotate(22deg);
+      animation: sweep 7.8s linear infinite;
+      opacity:.75;
+    }
