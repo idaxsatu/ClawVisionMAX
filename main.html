@@ -982,3 +982,85 @@
 
       async function callView(method, args){
         const iface = await ifacePromise;
+        const data = iface.encodeFunctionData(method, args || []);
+        const out = await ethCall(data);
+        const decoded = iface.decodeFunctionResult(method, out);
+        return decoded;
+      }
+
+      return {
+        address,
+        _proxy: true,
+        name: async () => (await callView("name", []) )[0],
+        symbol: async () => (await callView("symbol", []) )[0],
+        asset: async () => (await callView("asset", []) )[0],
+        owner: async () => (await callView("owner", []) )[0],
+        guardian: async () => (await callView("guardian", []) )[0],
+        paused: async () => (await callView("paused", []) )[0],
+        feeBps: async () => (await callView("feeBps", []) )[0],
+        feeRecipient: async () => (await callView("feeRecipient", []) )[0],
+        withdrawalDelay: async () => (await callView("withdrawalDelay", []) )[0],
+        totalSupply: async () => (await callView("totalSupply", []) )[0],
+        totalAssets: async () => (await callView("totalAssets", []) )[0],
+        rewardsRoot: async () => (await callView("rewardsRoot", []) )[0],
+        rewardsEpoch: async () => (await callView("rewardsEpoch", []) )[0],
+        previewDeposit: async (assets) => (await callView("previewDeposit", [assets]) )[0],
+        isRequestExecutable: async (requestId) => {
+          const r = await callView("isRequestExecutable", [requestId]);
+          return { ok: r[0], reason: r[1] };
+        }
+      };
+    }
+
+    // =============================================================
+    // UI actions
+    // =============================================================
+
+    function renderVault(){
+      el("vName").textContent = state.vault.name || "—";
+      el("vSymbol").textContent = state.vault.symbol || "—";
+      el("vAsset").textContent = state.vault.asset || "—";
+      el("vOwner").textContent = state.vault.owner || "—";
+      el("vGuardian").textContent = state.vault.guardian || "—";
+      el("vPaused").textContent = (state.vault.paused === null) ? "—" : String(state.vault.paused);
+      el("vFee").textContent = (state.vault.feeBps === null) ? "—" : String(state.vault.feeBps);
+      el("vFeeRecipient").textContent = state.vault.feeRecipient || "—";
+      el("vWDelay").textContent = (state.vault.withdrawalDelay === null) ? "—" : (String(state.vault.withdrawalDelay) + " sec");
+      el("vTotalSupply").textContent = (state.vault.totalSupply === null) ? "—" : String(state.vault.totalSupply);
+      el("vTotalAssets").textContent = (state.vault.totalAssets === null) ? "—" : String(state.vault.totalAssets);
+    }
+
+    async function refreshVault(){
+      const addr = pickVault();
+      if(!isAddr(addr)){
+        toast("warn","Vault address","Enter a valid 0x address.");
+        return;
+      }
+      const c = await vaultContractForRead();
+      const o = await Promise.all([
+        c.name(), c.symbol(), c.asset(),
+        c.owner(), c.guardian(), c.paused(),
+        c.feeBps(), c.feeRecipient(), c.withdrawalDelay(),
+        c.totalSupply(), c.totalAssets(),
+        c.rewardsRoot(), c.rewardsEpoch(),
+      ]);
+      state.vault.name = o[0];
+      state.vault.symbol = o[1];
+      state.vault.asset = el("assetOverride").value.trim() || o[2];
+      state.vault.owner = o[3];
+      state.vault.guardian = o[4];
+      state.vault.paused = o[5];
+      state.vault.feeBps = Number(o[6]);
+      state.vault.feeRecipient = o[7];
+      state.vault.withdrawalDelay = Number(o[8]);
+      state.vault.totalSupply = o[9].toString ? o[9].toString() : String(o[9]);
+      state.vault.totalAssets = o[10].toString ? o[10].toString() : String(o[10]);
+      state.vault.rewardsRoot = o[11];
+      state.vault.rewardsEpoch = Number(o[12]);
+      renderVault();
+
+      const snap = {
+        time: new Date().toISOString(),
+        vault: {...state.vault},
+        account: state.acct,
+        chainId: state.chainId,
