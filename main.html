@@ -162,3 +162,85 @@
       .grid{ grid-template-columns: 1fr; }
       .topActions{ justify-content:flex-start; }
     }
+
+    .card{
+      background: linear-gradient(180deg, rgba(14,21,49,.72), rgba(10,16,40,.62));
+      border: 1px solid rgba(255,255,255,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .card .hd{
+      padding: 14px 16px;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:10px;
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      background: rgba(0,0,0,.08);
+    }
+    .card .hd h2{
+      margin:0;
+      font-size: 14px;
+      letter-spacing:.28px;
+      text-transform: uppercase;
+      color: rgba(233,238,255,.92);
+      font-weight: 850;
+    }
+    .card .bd{
+      padding: 16px;
+    }
+
+    .row{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:12px;
+    }
+    @media (max-width: 720px){
+      .row{ grid-template-columns:1fr; }
+    }
+
+    label{
+      display:block;
+      font-size: 12px;
+      color: var(--muted);
+      margin: 0 0 6px;
+      letter-spacing:.15px;
+    }
+    input, textarea, select{
+      width:100%;
+      border: 1px solid rgba(255,255,255,.10);
+      background: rgba(7,9,18,.45);
+      border-radius: 12px;
+      color: var(--txt);
+      padding: 11px 12px;
+      outline:none;
+      font-family: var(--sans);
+      font-size: 13px;
+      transition: border-color .12s ease, background .12s ease;
+    }
+    textarea{ min-height: 96px; resize: vertical; font-family: var(--mono); font-size: 12px; }
+    input:focus, textarea:focus, select:focus{ border-color: rgba(47,231,255,.5); background: rgba(7,9,18,.62); }
+
+    .help{
+      color: var(--muted2);
+      font-size: 12px;
+      margin-top: 7px;
+      line-height: 1.4;
+    }
+    .mono{ font-family: var(--mono); }
+    .mini{
+      font-size: 12px;
+      color: var(--muted);
+    }
+    .hr{
+      height:1px;
+      background: rgba(255,255,255,.07);
+      margin: 12px 0;
+    }
+
+    .kv{
+      display:grid;
+      grid-template-columns: 190px 1fr;
+      gap:8px 12px;
+      align-items:center;
